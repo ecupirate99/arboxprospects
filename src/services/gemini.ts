@@ -1,7 +1,9 @@
 import { SearchCriteria, SearchResult } from '../types';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+const MODEL = 'models/gemini-1.5-flash'; // or 'models/gemini-1.5-pro'
+const API_URL = `https://generativelanguage.googleapis.com/v1/${MODEL}:generateContent`;
+
 
 export async function searchEntities(criteria: SearchCriteria): Promise<SearchResult[]> {
   try {
@@ -24,19 +26,20 @@ export async function searchEntities(criteria: SearchCriteria): Promise<SearchRe
         prompt = `Find business entities in ${criteria.state} that are in the ${criteria.industry} industry. Format the response as a JSON array with exactly 40 objects, each having these properties: id (number), entityName (string), websiteUrl (string). Only include valid URLs.`;
     }
 
-    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }]
-      })
-    });
+  const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    contents: [
+      {
+        role: 'user',
+        parts: [{ text: prompt }]
+      }
+    ]
+  })
+});
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
